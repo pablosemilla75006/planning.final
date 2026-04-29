@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeamPlanner Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+
+    <header class="bg-indigo-600 text-white p-4 shadow-lg flex justify-between items-center">
+        <h1 class="text-xl font-bold flex items-center gap-2">
+            <i data-lucide="calendar"></i> TeamPlanner
+        </h1>
+        <button id="addShiftBtn" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-indigo-50 transition">
+            + Ajouter un shift
+        </button>
+    </header>
+
+    <main class="p-6 max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <p class="text-sm text-gray-500 uppercase font-bold">Effectif actif</p>
+                <p class="text-3xl font-bold text-indigo-600" id="totalStaff">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <p class="text-sm text-gray-500 uppercase font-bold">Heures totales / sem</p>
+                <p class="text-3xl font-bold text-green-600" id="totalHours">0h</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <p class="text-sm text-gray-500 uppercase font-bold">Alertes Conflits</p>
+                <p class="text-3xl font-bold text-red-500">0</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="p-4 border-b">Employé</th>
+                        <th class="p-4 border-b">Lundi</th>
+                        <th class="p-4 border-b">Mardi</th>
+                        <th class="p-4 border-b">Mercredi</th>
+                        <th class="p-4 border-b">Jeudi</th>
+                        <th class="p-4 border-b">Vendredi</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleBody">
+                    </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md">
+            <h2 class="text-xl font-bold mb-4">Nouvel horaire</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nom de l'employé</label>
+                    <input type="text" id="staffName" class="w-full border rounded-lg p-2" placeholder="Ex: Julie Martin">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Début</label>
+                        <input type="time" id="startTime" class="w-full border rounded-lg p-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Fin</label>
+                        <input type="time" id="endTime" class="w-full border rounded-lg p-2">
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-6">
+                    <button id="saveBtn" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg font-bold">Enregistrer</button>
+                    <button id="closeBtn" class="flex-1 bg-gray-200 py-2 rounded-lg">Annuler</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Logique simplifiée
+        const shifts = [];
+        const modal = document.getElementById('modal');
+        
+        // Initialisation des icônes
+        lucide.createIcons();
+
+        // Fonctions UI
+        document.getElementById('addShiftBtn').onclick = () => modal.classList.remove('hidden');
+        document.getElementById('closeBtn').onclick = () => modal.classList.add('hidden');
+
+        document.getElementById('saveBtn').onclick = () => {
+            const name = document.getElementById('staffName').value;
+            const start = document.getElementById('startTime').value;
+            const end = document.getElementById('endTime').value;
+
+            if(name && start && end) {
+                addShiftRow(name, start, end);
+                modal.classList.add('hidden');
+                updateStats();
+            }
+        };
+
+        function addShiftRow(name, start, end) {
+            const tbody = document.getElementById('scheduleBody');
+            const row = document.createElement('tr');
+            row.className = "hover:bg-gray-50 border-b transition";
+            row.innerHTML = `
+                <td class="p-4 font-medium text-indigo-700">${name}</td>
+                <td class="p-4"><span class="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded">${start} - ${end}</span></td>
+                <td class="p-4">--</td>
+                <td class="p-4">--</td>
+                <td class="p-4">--</td>
+                <td class="p-4">--</td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function updateStats() {
+            const rows = document.querySelectorAll('#scheduleBody tr').length;
+            document.getElementById('totalStaff').innerText = rows;
+            document.getElementById('totalHours').innerText = (rows * 7) + "h";
+        }
+    </script>
+</body>
+</html>
