@@ -3,125 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TeamPlanner - Style Skello</title>
+    <title>TeamPlanner Pro - Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .cell-c { background-color: #dcfce7; color: #166534; } /* Travail - Vert */
-        .cell-off { background-color: #fef9c3; color: #854d0e; } /* Repos - Jaune */
-        .cell-x { background-color: #fce7f3; color: #9d174d; } /* Spécial - Rose */
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .shift-X { background-color: #E3A857; color: white; } /* Indian Yellow */
+        .shift-C { background-color: #C1E1C1; color: #1e4620; } /* Vert Pastel */
+        .shift-PC { background-color: #F7CAC9; color: #721c24; } /* Rouge/Rose Pastel */
+        .shift-AM { background-color: #AEC6CF; color: #002366; } /* Bleu Pastel */
+        .shift-Off { background-color: #F8C3CD; color: #702963; } /* Rose Pastel */
+        .shift-ABS { background-color: #D3D3D3; color: #333333; } /* Gris Pastel */
+        .shift-Empty { background-color: #f1f5f9; color: #94a3b8; }
+        .editable:hover { cursor: pointer; filter: brightness(0.9); }
     </style>
 </head>
-<body class="bg-[#f8fafc]">
+<body>
 
-    <!-- Sidebar & Nav -->
-    <nav class="bg-white border-b border-slate-200 p-4 flex justify-between items-center sticky top-0 z-10">
-        <div class="flex items-center gap-8">
-            <h1 class="text-[#0f172a] text-xl font-bold tracking-tight">TeamPlanner <span class="text-indigo-600">Pro</span></h1>
-            <div class="flex bg-slate-100 rounded-lg p-1">
-                <button class="px-4 py-1.5 bg-white shadow-sm rounded-md text-sm font-medium">Planning Semaine</button>
-                <button class="px-4 py-1.5 text-sm text-slate-500 font-medium">Équipe</button>
-            </div>
+    <nav class="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
+        <div class="flex items-center gap-4">
+            <h1 class="text-xl font-bold text-slate-800">TeamPlanner <span class="text-indigo-600">Pro</span></h1>
+            <input type="week" id="weekSelector" class="border rounded-lg px-2 py-1 text-sm text-slate-600" value="2026-W17">
         </div>
-        <div class="flex gap-3">
-            <button class="text-slate-600 px-4 py-2 text-sm font-semibold italic">Semaine du 20 Avril</button>
-            <button onclick="openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-bold shadow-sm transition-all">
-                + Nouveau Shift
-            </button>
-        </div>
+        <button onclick="addNewEmployee()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+            + Ajouter un employé
+        </button>
     </nav>
 
     <div class="p-6">
-        <!-- Table de Planning -->
-        <div class="bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden">
-            <table class="w-full border-collapse text-sm">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+            <table class="w-full text-sm text-left">
                 <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200">
-                        <th class="p-4 font-semibold text-slate-700 text-left w-48 border-r">Collaborateur</th>
-                        <th class="p-4 font-semibold text-slate-600">Lundi</th>
-                        <th class="p-4 font-semibold text-slate-600">Mardi</th>
-                        <th class="p-4 font-semibold text-slate-600">Mercredi</th>
-                        <th class="p-4 font-semibold text-slate-600">Jeudi</th>
-                        <th class="p-4 font-semibold text-slate-600">Vendredi</th>
-                        <th class="p-4 font-semibold text-slate-600">Samedi</th>
-                        <th class="p-4 font-semibold text-slate-600">Dimanche</th>
-                        <th class="p-4 font-semibold text-indigo-600 border-l bg-indigo-50/30">Total Heures</th>
+                    <tr class="bg-slate-50 border-b">
+                        <th class="p-4 font-bold border-r w-48 text-slate-700">Collaborateur</th>
+                        <th class="p-4 text-center font-semibold">Lun</th>
+                        <th class="p-4 text-center font-semibold">Mar</th>
+                        <th class="p-4 text-center font-semibold">Mer</th>
+                        <th class="p-4 text-center font-semibold">Jeu</th>
+                        <th class="p-4 text-center font-semibold">Ven</th>
+                        <th class="p-4 text-center font-semibold">Sam</th>
+                        <th class="p-4 text-center font-semibold">Dim</th>
+                        <th class="p-4 text-center font-bold text-indigo-600 bg-indigo-50/30">Total Hebdo</th>
                     </tr>
                 </thead>
-                <tbody id="planning-body">
-                    <!-- Les données s'afficheront ici -->
+                <tbody id="tableBody">
+                    <!-- Généré par JS -->
                 </tbody>
+                <tfoot>
+                    <tr id="totalDailyRow" class="bg-slate-50 font-bold border-t-2 border-slate-200">
+                        <td class="p-4 border-r">Total Heures Jour</td>
+                        <!-- Totaux journaliers injectés ici -->
+                    </tr>
+                </tfoot>
             </table>
         </div>
-    </div>
-
-    <!-- Modal d'ajout (Style Skello) -->
-    <div id="modal" class="fixed inset-0 bg-slate-900/50 hidden backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md border border-slate-200">
-            <h2 class="text-2xl font-bold text-slate-800 mb-6">Ajouter un créneau</h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Employé</label>
-                    <input type="text" id="nameInput" placeholder="Ex: Pablo" class="w-full border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Type de Shift</label>
-                    <select id="typeInput" class="w-full border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <option value="C">Travail (C)</option>
-                        <option value="Off">Repos (Off)</option>
-                        <option value="X">Spécial (X)</option>
-                    </select>
-                </div>
-                <div class="flex gap-3 pt-4">
-                    <button onclick="addShift()" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition">Enregistrer</button>
-                    <button onclick="closeModal()" class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition">Annuler</button>
-                </div>
-            </div>
+        
+        <div class="mt-4 p-4 bg-slate-100 rounded-lg text-xs text-slate-500">
+            <strong>Légende :</strong> X (Coupure 12.5h) | C (Continue 10h) | PC (Petite C. 4h) | AM (Maladie) | Off (Repos) | ABS (Absence)
         </div>
     </div>
 
     <script>
-        const employees = ["Pablo", "Antoine", "Basile", "Eliot", "Florian", "Giulia", "Maria"];
+        // Configuration des heures par code
+        const hourMapping = { 'X': 12.5, 'C': 10, 'PC': 4, 'AM': 0, 'Off': 0, 'ABS': 0, '': 0 };
         
-        function initTable() {
-            const tbody = document.getElementById('planning-body');
-            employees.forEach(emp => {
-                renderRow(emp);
+        // Données initiales
+        let team = [
+            { name: "Pablo", schedule: ["C", "C", "C", "X", "X", "C", "Off"] },
+            { name: "Antoine", schedule: ["C", "C", "C", "Off", "Off", "X", "C"] }
+        ];
+
+        function renderPlanning() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = "";
+            let dailyTotals = [0, 0, 0, 0, 0, 0, 0];
+
+            team.forEach((emp, empIdx) => {
+                let row = document.createElement('tr');
+                row.className = "border-b border-slate-100";
+                
+                let weeklyTotal = 0;
+                let cellsHtml = `<td class="p-4 font-bold text-slate-700 border-r editable" onclick="editName(${empIdx})">${emp.name}</td>`;
+                
+                emp.schedule.forEach((code, dayIdx) => {
+                    const hours = hourMapping[code] || 0;
+                    weeklyTotal += hours;
+                    dailyTotals[dayIdx] += hours;
+                    
+                    const shiftClass = code ? `shift-${code}` : 'shift-Empty';
+                    cellsHtml += `
+                        <td class="p-2 text-center">
+                            <div onclick="editShift(${empIdx}, ${dayIdx})" 
+                                 class="editable rounded-lg py-2 font-bold text-xs transition shadow-sm ${shiftClass}">
+                                 ${code || '-'}
+                            </div>
+                        </td>`;
+                });
+
+                cellsHtml += `<td class="p-4 text-center font-bold text-indigo-600 bg-indigo-50/20">${weeklyTotal}h</td>`;
+                row.innerHTML = cellsHtml;
+                tbody.appendChild(row);
             });
+
+            renderDailyTotals(dailyTotals);
         }
 
-        function renderRow(name) {
-            const tbody = document.getElementById('planning-body');
-            const row = document.createElement('tr');
-            row.className = "border-b border-slate-100 hover:bg-slate-50/50 transition";
-            
-            row.innerHTML = `
-                <td class="p-4 font-bold text-slate-700 border-r bg-white italic">${name}</td>
-                <td class="p-2 text-center"><div class="rounded-lg p-3 cell-c font-bold text-xs">C</div></td>
-                <td class="p-2 text-center"><div class="rounded-lg p-3 cell-c font-bold text-xs">C</div></td>
-                <td class="p-2 text-center"><div class="rounded-lg p-3 cell-off font-bold text-xs">Off</div></td>
-                <td class="p-2 text-center"><div class="rounded-lg p-3 cell-c font-bold text-xs">C</div></td>
-                <td class="p-2 text-center"><div class="rounded-lg p-3 cell-x font-bold text-xs">X</div></td>
-                <td class="p-2 text-center"><div class="rounded-lg p-3 cell-c font-bold text-xs">C</div></td>
-                <td class="p-2 text-center"><div class="rounded-lg p-3 cell-off font-bold text-xs">Off</div></td>
-                <td class="p-4 text-center font-bold text-indigo-600 border-l bg-indigo-50/20 text-base">48h</td>
-            `;
-            tbody.appendChild(row);
+        function renderDailyTotals(totals) {
+            const footerRow = document.getElementById('totalDailyRow');
+            // On garde la première cellule et on ajoute les totaux
+            let html = `<td class="p-4 border-r">Total Heures Jour</td>`;
+            totals.forEach(t => {
+                html += `<td class="p-4 text-center text-slate-600">${t}h</td>`;
+            });
+            html += `<td class="bg-indigo-100/50"></td>`;
+            footerRow.innerHTML = html;
         }
 
-        function openModal() { document.getElementById('modal').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+        // --- FONCTIONS D'ÉDITION ---
 
-        function addShift() {
-            const name = document.getElementById('nameInput').value;
-            if(name) {
-                renderRow(name);
-                closeModal();
+        function editName(index) {
+            const newName = prompt("Nouveau nom de l'employé :", team[index].name);
+            if (newName) {
+                team[index].name = newName;
+                renderPlanning();
             }
         }
 
-        initTable();
+        function editShift(empIdx, dayIdx) {
+            const current = team[empIdx].schedule[dayIdx];
+            const newShift = prompt("Entrez le code shift (X, C, PC, AM, Off, ABS) :", current).toUpperCase();
+            
+            if (Object.keys(hourMapping).includes(newShift)) {
+                team[empIdx].schedule[dayIdx] = newShift;
+                renderPlanning();
+            } else {
+                alert("Code invalide ! Utilisez : X, C, PC, AM, Off ou ABS");
+            }
+        }
+
+        function addNewEmployee() {
+            const name = prompt("Nom du nouvel employé :");
+            if (name) {
+                team.push({ name: name, schedule: ["", "", "", "", "", "", ""] });
+                renderPlanning();
+            }
+        }
+
+        // Initialisation
+        renderPlanning();
     </script>
 </body>
 </html>
