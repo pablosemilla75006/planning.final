@@ -3,75 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TeamPlanner Pro - Management</title>
+    <title>TeamPlanner Pro - Skello Style</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .shift-X { background-color: #E3A857; color: white; } /* Indian Yellow */
-        .shift-C { background-color: #C1E1C1; color: #1e4620; } /* Vert Pastel */
-        .shift-PC { background-color: #F7CAC9; color: #721c24; } /* Rouge/Rose Pastel */
-        .shift-AM { background-color: #AEC6CF; color: #002366; } /* Bleu Pastel */
-        .shift-Off { background-color: #F8C3CD; color: #702963; } /* Rose Pastel */
-        .shift-ABS { background-color: #D3D3D3; color: #333333; } /* Gris Pastel */
-        .shift-Empty { background-color: #f1f5f9; color: #94a3b8; }
-        .editable:hover { cursor: pointer; filter: brightness(0.9); }
+        .shift-X { background-color: #E3A857; color: white; }
+        .shift-C { background-color: #C1E1C1; color: #1e4620; }
+        .shift-PC { background-color: #F7CAC9; color: #721c24; }
+        .shift-AM { background-color: #AEC6CF; color: #002366; }
+        .shift-Off { background-color: #F8C3CD; color: #702963; }
+        .shift-ABS { background-color: #D3D3D3; color: #333333; }
+        .shift-Empty { background-color: #ffffff; border: 1px dashed #cbd5e1; color: #94a3b8; }
+        .editable:hover { cursor: pointer; transform: scale(1.02); transition: all 0.2s; }
+        select { appearance: none; outline: none; }
     </style>
 </head>
 <body>
 
-    <nav class="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
-        <div class="flex items-center gap-4">
-            <h1 class="text-xl font-bold text-slate-800">TeamPlanner <span class="text-indigo-600">Pro</span></h1>
-            <input type="week" id="weekSelector" class="border rounded-lg px-2 py-1 text-sm text-slate-600" value="2026-W17">
+    <nav class="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+        <div class="flex items-center gap-6">
+            <h1 class="text-xl font-bold text-slate-800 tracking-tight">TeamPlanner <span class="text-indigo-600">Pro</span></h1>
+            <div class="flex flex-col">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Semaine de gestion</span>
+                <input type="week" id="weekSelector" onchange="updateDates()" class="font-semibold text-slate-700 outline-none" value="2026-W17">
+            </div>
         </div>
-        <button onclick="addNewEmployee()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+        <button onclick="addNewEmployee()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md transition">
             + Ajouter un employé
         </button>
     </nav>
 
-    <div class="p-6">
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
-            <table class="w-full text-sm text-left">
+    <div class="p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+            <table class="w-full text-sm text-left border-collapse">
                 <thead>
-                    <tr class="bg-slate-50 border-b">
-                        <th class="p-4 font-bold border-r w-48 text-slate-700">Collaborateur</th>
-                        <th class="p-4 text-center font-semibold">Lun</th>
-                        <th class="p-4 text-center font-semibold">Mar</th>
-                        <th class="p-4 text-center font-semibold">Mer</th>
-                        <th class="p-4 text-center font-semibold">Jeu</th>
-                        <th class="p-4 text-center font-semibold">Ven</th>
-                        <th class="p-4 text-center font-semibold">Sam</th>
-                        <th class="p-4 text-center font-semibold">Dim</th>
-                        <th class="p-4 text-center font-bold text-indigo-600 bg-indigo-50/30">Total Hebdo</th>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                        <th class="p-4 font-bold border-r w-44 text-slate-700">Collaborateur</th>
+                        <th class="p-4 text-center border-r"><span class="block text-[10px] text-slate-400 uppercase">Lun</span><span class="day-date"></span></th>
+                        <th class="p-4 text-center border-r"><span class="block text-[10px] text-slate-400 uppercase">Mar</span><span class="day-date"></span></th>
+                        <th class="p-4 text-center border-r"><span class="block text-[10px] text-slate-400 uppercase">Mer</span><span class="day-date"></span></th>
+                        <th class="p-4 text-center border-r"><span class="block text-[10px] text-slate-400 uppercase">Jeu</span><span class="day-date"></span></th>
+                        <th class="p-4 text-center border-r"><span class="block text-[10px] text-slate-400 uppercase">Ven</span><span class="day-date"></span></th>
+                        <th class="p-4 text-center border-r"><span class="block text-[10px] text-slate-400 uppercase">Sam</span><span class="day-date"></span></th>
+                        <th class="p-4 text-center border-r"><span class="block text-[10px] text-slate-400 uppercase">Dim</span><span class="day-date"></span></th>
+                        <th class="p-4 text-center font-bold text-indigo-600 bg-indigo-50/30">Total</th>
                     </tr>
                 </thead>
-                <tbody id="tableBody">
-                    <!-- Généré par JS -->
-                </tbody>
+                <tbody id="tableBody"></tbody>
                 <tfoot>
                     <tr id="totalDailyRow" class="bg-slate-50 font-bold border-t-2 border-slate-200">
-                        <td class="p-4 border-r">Total Heures Jour</td>
-                        <!-- Totaux journaliers injectés ici -->
+                        <td class="p-4 border-r text-slate-500 italic">Charge journalière</td>
                     </tr>
                 </tfoot>
             </table>
         </div>
-        
-        <div class="mt-4 p-4 bg-slate-100 rounded-lg text-xs text-slate-500">
-            <strong>Légende :</strong> X (Coupure 12.5h) | C (Continue 10h) | PC (Petite C. 4h) | AM (Maladie) | Off (Repos) | ABS (Absence)
-        </div>
     </div>
 
     <script>
-        // Configuration des heures par code
         const hourMapping = { 'X': 12.5, 'C': 10, 'PC': 4, 'AM': 0, 'Off': 0, 'ABS': 0, '': 0 };
         
-        // Données initiales
         let team = [
-            { name: "Pablo", schedule: ["C", "C", "C", "X", "X", "C", "Off"] },
-            { name: "Antoine", schedule: ["C", "C", "C", "Off", "Off", "X", "C"] }
+            { name: "Pablo", schedule: ["Off", "C", "C", "X", "X", "C", "Off"] },
+            { name: "Antoine", schedule: ["C", "C", "C", "Off", "Off", "X", "C"] },
+            { name: "Basile", schedule: ["C", "Off", "Off", "C", "C", "C", "X"] },
+            { name: "Eliot", schedule: ["C", "C", "C", "C", "X", "Off", "Off"] },
+            { name: "Florian", schedule: ["C", "C", "Off", "Off", "C", "C", "X"] },
+            { name: "Giulia", schedule: ["Off", "Off", "C", "C", "C", "X", "C"] },
+            { name: "Maria", schedule: ["Off", "Off", "C", "C", "C", "C", "X"] },
+            { name: "Snow", schedule: ["C", "C", "C", "Off", "Off", "C", "X"] },
+            { name: "Selah", schedule: ["", "C", "", "C", "", "", ""] },
+            { name: "Andrew", schedule: ["Off", "Off", "C", "C", "C", "C", "X"] },
+            { name: "Valentine", schedule: ["C", "C", "C", "", "", "", "C"] },
+            { name: "Solal", schedule: ["Off", "C", "C", "C", "C", "X", "Off"] },
+            { name: "Artem", schedule: ["C", "C", "C", "C", "X", "Off", "Off"] },
+            { name: "Celine", schedule: ["Off", "Off", "C", "C", "C", "C", "X"] }
         ];
+
+        function updateDates() {
+            const weekVal = document.getElementById('weekSelector').value;
+            const [year, week] = weekVal.split('-W');
+            let date = new Date(year, 0, 1 + (week - 1) * 7);
+            const day = date.getDay();
+            const diff = date.getDate() - day + (day == 0 ? -6:1);
+            const monday = new Date(date.setDate(diff));
+
+            const dateLabels = document.querySelectorAll('.day-date');
+            dateLabels.forEach((label, i) => {
+                let d = new Date(monday);
+                d.setDate(monday.getDate() + i);
+                label.innerText = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'numeric' });
+            });
+            renderPlanning();
+        }
 
         function renderPlanning() {
             const tbody = document.getElementById('tableBody');
@@ -80,77 +104,56 @@
 
             team.forEach((emp, empIdx) => {
                 let row = document.createElement('tr');
-                row.className = "border-b border-slate-100";
+                row.className = "border-b border-slate-100 hover:bg-slate-50 transition";
                 
                 let weeklyTotal = 0;
-                let cellsHtml = `<td class="p-4 font-bold text-slate-700 border-r editable" onclick="editName(${empIdx})">${emp.name}</td>`;
+                let html = `<td class="p-4 font-bold text-slate-700 border-r editable bg-white" onclick="editName(${empIdx})">${emp.name}</td>`;
                 
                 emp.schedule.forEach((code, dayIdx) => {
                     const hours = hourMapping[code] || 0;
                     weeklyTotal += hours;
                     dailyTotals[dayIdx] += hours;
                     
-                    const shiftClass = code ? `shift-${code}` : 'shift-Empty';
-                    cellsHtml += `
-                        <td class="p-2 text-center">
-                            <div onclick="editShift(${empIdx}, ${dayIdx})" 
-                                 class="editable rounded-lg py-2 font-bold text-xs transition shadow-sm ${shiftClass}">
-                                 ${code || '-'}
-                            </div>
+                    html += `
+                        <td class="p-2 text-center border-r border-slate-50">
+                            <select onchange="updateShift(${empIdx}, ${dayIdx}, this.value)" 
+                                    class="w-full rounded-xl py-2 px-1 text-center font-bold text-[11px] editable shadow-sm ${code ? 'shift-'+code : 'shift-Empty'}">
+                                ${Object.keys(hourMapping).map(opt => `<option value="${opt}" ${opt === code ? 'selected' : ''}>${opt || '-'}</option>`).join('')}
+                            </select>
                         </td>`;
                 });
 
-                cellsHtml += `<td class="p-4 text-center font-bold text-indigo-600 bg-indigo-50/20">${weeklyTotal}h</td>`;
-                row.innerHTML = cellsHtml;
+                html += `<td class="p-4 text-center font-bold text-indigo-600 bg-indigo-50/30 text-base">${weeklyTotal}h</td>`;
+                row.innerHTML = html;
                 tbody.appendChild(row);
             });
-
             renderDailyTotals(dailyTotals);
+        }
+
+        function updateShift(empIdx, dayIdx, value) {
+            team[empIdx].schedule[dayIdx] = value;
+            renderPlanning();
         }
 
         function renderDailyTotals(totals) {
             const footerRow = document.getElementById('totalDailyRow');
-            // On garde la première cellule et on ajoute les totaux
-            let html = `<td class="p-4 border-r">Total Heures Jour</td>`;
-            totals.forEach(t => {
-                html += `<td class="p-4 text-center text-slate-600">${t}h</td>`;
-            });
-            html += `<td class="bg-indigo-100/50"></td>`;
+            let html = `<td class="p-4 border-r text-slate-400 font-medium">Total Heures Jour</td>`;
+            totals.forEach(t => { html += `<td class="p-4 text-center text-slate-600 font-bold">${t}h</td>`; });
+            html += `<td class="bg-indigo-100/30"></td>`;
             footerRow.innerHTML = html;
         }
 
-        // --- FONCTIONS D'ÉDITION ---
-
         function editName(index) {
-            const newName = prompt("Nouveau nom de l'employé :", team[index].name);
-            if (newName) {
-                team[index].name = newName;
-                renderPlanning();
-            }
-        }
-
-        function editShift(empIdx, dayIdx) {
-            const current = team[empIdx].schedule[dayIdx];
-            const newShift = prompt("Entrez le code shift (X, C, PC, AM, Off, ABS) :", current).toUpperCase();
-            
-            if (Object.keys(hourMapping).includes(newShift)) {
-                team[empIdx].schedule[dayIdx] = newShift;
-                renderPlanning();
-            } else {
-                alert("Code invalide ! Utilisez : X, C, PC, AM, Off ou ABS");
-            }
+            const n = prompt("Nom :", team[index].name);
+            if(n) { team[index].name = n; renderPlanning(); }
         }
 
         function addNewEmployee() {
-            const name = prompt("Nom du nouvel employé :");
-            if (name) {
-                team.push({ name: name, schedule: ["", "", "", "", "", "", ""] });
-                renderPlanning();
-            }
+            const n = prompt("Nom du nouvel employé :");
+            if(n) { team.push({name: n, schedule: ["","","","","","",""]}); renderPlanning(); }
         }
 
-        // Initialisation
-        renderPlanning();
+        updateDates();
     </script>
 </body>
 </html>
