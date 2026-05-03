@@ -11,10 +11,9 @@
             font-family: 'Inter', sans-serif; 
             background-color: #fcfcfd; 
             color: #1a1a1a;
-            font-weight: 300; /* Typographie fine par défaut */
+            font-weight: 300;
         }
         
-        /* Fixer la largeur des colonnes pour éviter les sauts */
         table {
             table-layout: fixed;
             width: 100%;
@@ -29,10 +28,7 @@
             width: 100%;
         }
 
-        /* Styles des Shifts - Largeur fixe forcée */
-        .shift-cell {
-            width: 80px; /* Largeur identique pour tous les jours */
-        }
+        .shift-cell { width: 80px; }
 
         .shift-X { background-color: #E3A857; color: white; }
         .shift-C { background-color: #C1E1C1; color: #1e4620; }
@@ -43,7 +39,6 @@
         .shift-Empty { background-color: #ffffff; border: 1px dashed #e2e8f0; color: #94a3b8; }
         
         .font-medium { font-weight: 500; }
-        .font-light-custom { font-weight: 300; }
     </style>
 </head>
 <body>
@@ -51,45 +46,51 @@
     <nav class="bg-white border-b border-gray-100 p-5 flex justify-between items-center sticky top-0 z-50">
         <div class="flex items-center gap-10">
             <h1 class="text-2xl font-semibold tracking-tighter text-gray-900">Pab<span class="text-indigo-600">app</span></h1>
-            <div class="flex items-center bg-gray-50 border border-gray-100 rounded-full px-2 py-1 gap-1">
-                <button onclick="changeWeek(-1)" class="p-2 hover:text-indigo-500 transition-colors">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m15 18-6-6 6-6"/></svg>
-                </button>
-                <input type="week" id="weekSelector" onchange="updateDates()" class="bg-transparent text-xs font-medium text-gray-600 outline-none cursor-pointer">
-                <button onclick="changeWeek(1)" class="p-2 hover:text-indigo-500 transition-colors">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m9 18 6-6 6-6"/></svg>
-                </button>
+            
+            <div class="flex items-center gap-4">
+                <div class="flex items-center bg-gray-50 border border-gray-100 rounded-full px-2 py-1 gap-1">
+                    <button onclick="changeWeek(-1)" class="p-2 hover:text-indigo-500 transition-colors">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m15 18-6-6 6-6"/></svg>
+                    </button>
+                    <input type="week" id="weekSelector" onchange="updateDates()" class="bg-transparent text-xs font-medium text-gray-600 outline-none cursor-pointer">
+                    <button onclick="changeWeek(1)" class="p-2 hover:text-indigo-500 transition-colors">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m9 18 6-6 6-6"/></svg>
+                    </button>
+                </div>
+                <!-- Rappel du mois -->
+                <span id="navMonthDisplay" class="text-sm font-medium text-indigo-500 bg-indigo-50 px-4 py-1.5 rounded-full uppercase tracking-wider text-[10px]"></span>
             </div>
         </div>
         <div class="flex items-center gap-3">
             <button onclick="toggleView('billing')" id="billingBtn" class="text-gray-500 hover:text-indigo-500 text-sm font-medium px-4 py-2">Bilan Mensuel</button>
-            <button onclick="addNewEmployee()" class="bg-gray-900 text-white px-5 py-2.5 rounded-full text-sm font-light-custom hover:bg-indigo-700 shadow-sm transition-all">+ Nouveau Collaborateur</button>
+            <button onclick="addNewEmployee()" class="bg-gray-900 text-white px-5 py-2.5 rounded-full text-sm hover:bg-indigo-700 shadow-sm transition-all">+ Nouveau Collaborateur</button>
         </div>
     </nav>
 
     <!-- VUE PLANNING -->
     <main id="planningView" class="p-8 max-w-[1600px] mx-auto">
+        <div class="mb-4">
+            <h2 id="tableMonthHeader" class="text-lg font-light text-gray-400 italic"></h2>
+        </div>
         <div class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
             <table class="text-sm text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-50/50 border-b border-gray-100">
-                        <th class="p-5 font-medium text-gray-400 uppercase text-[10px] tracking-widest border-r w-48">Collaborateur</th>
-                        <!-- Les jours ont maintenant une classe shift-cell pour la largeur fixe -->
-                        <th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 font-medium uppercase mb-1">Lun</span><span class="day-date text-gray-900 font-light-custom text-lg"></span></th>
-                        <th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 font-medium uppercase mb-1">Mar</span><span class="day-date text-gray-900 font-light-custom text-lg"></span></th>
-                        <th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 font-medium uppercase mb-1">Mer</span><span class="day-date text-gray-900 font-light-custom text-lg"></span></th>
-                        <th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 font-medium uppercase mb-1">Jeu</span><span class="day-date text-gray-900 font-light-custom text-lg"></span></th>
-                        <th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 font-medium uppercase mb-1">Ven</span><span class="day-date text-gray-900 font-light-custom text-lg"></span></th>
-                        <th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 font-medium uppercase mb-1">Sam</span><span class="day-date text-gray-900 font-light-custom text-lg"></span></th>
-                        <th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 font-medium uppercase mb-1">Dim</span><span class="day-date text-gray-900 font-light-custom text-lg"></span></th>
-                        <th class="p-4 text-center font-medium text-indigo-500 bg-indigo-50/20 w-28">Total Net</th>
+                        <!-- Colonne Collaborateur réduite à w-36 -->
+                        <th class="p-5 font-medium text-gray-400 uppercase text-[10px] tracking-widest border-r w-36">Team</th>
+                        <th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 font-medium uppercase mb-1">Lun</span><span class="day-date text-gray-900 font-light text-lg"></span></th>
+                        <th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 font-medium uppercase mb-1">Mar</span><span class="day-date text-gray-900 font-light text-lg"></span></th>
+                        <th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 font-medium uppercase mb-1">Mer</span><span class="day-date text-gray-900 font-light text-lg"></span></th>
+                        <th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 font-medium uppercase mb-1">Jeu</span><span class="day-date text-gray-900 font-light text-lg"></span></th>
+                        <th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 font-medium uppercase mb-1">Ven</span><span class="day-date text-gray-900 font-light text-lg"></span></th>
+                        <th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 font-medium uppercase mb-1">Sam</span><span class="day-date text-gray-900 font-light text-lg"></span></th>
+                        <th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 font-medium uppercase mb-1">Dim</span><span class="day-date text-gray-900 font-light text-lg"></span></th>
+                        <th class="p-4 text-center font-medium text-indigo-500 bg-indigo-50/20 w-28">Total</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
                 <tfoot>
-                    <tr id="totalDailyRow" class="bg-gray-50/30 font-light-custom border-t border-gray-100">
-                        <!-- Le pied de page suivra la même structure -->
-                    </tr>
+                    <tr id="totalDailyRow" class="bg-gray-50/30 border-t border-gray-100"></tr>
                 </tfoot>
             </table>
         </div>
@@ -98,14 +99,14 @@
     <!-- VUE BILAN MENSUEL -->
     <main id="billingView" class="hidden p-8 max-w-4xl mx-auto">
         <button onclick="toggleView('planning')" class="text-indigo-500 text-sm font-medium mb-4 flex items-center gap-2">← Retour au planning</button>
-        <h2 class="text-3xl font-light-custom text-gray-900 mb-8">Bilan Pab<span class="text-indigo-600 font-medium">app</span> <span id="monthLabel" class="text-gray-400 italic"></span></h2>
+        <h2 class="text-3xl font-light text-gray-900 mb-8">Bilan <span class="text-indigo-600 font-medium">Pabapp</span> <span id="billingMonthLabel" class="text-gray-400 italic"></span></h2>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <table class="w-full text-left text-sm" style="table-layout: auto;"> <!-- Layout auto ici pour le bilan -->
+            <table class="w-full text-left text-sm" style="table-layout: auto;">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="p-5 font-medium text-gray-500">Employé</th>
-                        <th class="p-5 font-medium text-gray-500 text-center">Heures Mensuelles (Est.)</th>
-                        <th class="p-5 font-medium text-gray-500 text-center">Coût Estimé (12€/h)</th>
+                        <th class="p-5 font-medium text-gray-500 text-center">Heures Mensuelles</th>
+                        <th class="p-5 font-medium text-gray-500 text-center">Coût (12€/h)</th>
                     </tr>
                 </thead>
                 <tbody id="billingBody"></tbody>
@@ -135,14 +136,8 @@
 
         let team = JSON.parse(localStorage.getItem('pabapp_data')) || defaultTeam;
 
-        function saveData() {
-            localStorage.setItem('pabapp_data', JSON.stringify(team));
-        }
-
-        function getNetHours(code) {
-            let brute = rawHours[code] || 0;
-            return brute > 6 ? brute - 0.5 : brute;
-        }
+        function saveData() { localStorage.setItem('pabapp_data', JSON.stringify(team)); }
+        function getNetHours(code) { let brute = rawHours[code] || 0; return brute > 6 ? brute - 0.5 : brute; }
 
         function toggleView(view) {
             document.getElementById('planningView').classList.toggle('hidden', view === 'billing');
@@ -158,7 +153,10 @@
             const diff = date.getDate() - day + (day == 0 ? -6:1);
             const monday = new Date(date.setDate(diff));
             
-            document.getElementById('monthLabel').innerText = monday.toLocaleDateString('fr-FR', {month: 'long', year: 'numeric'});
+            const monthText = monday.toLocaleDateString('fr-FR', {month: 'long', year: 'numeric'});
+            document.getElementById('navMonthDisplay').innerText = monthText;
+            document.getElementById('tableMonthHeader').innerText = "Planning de " + monthText;
+            document.getElementById('billingMonthLabel').innerText = monthText;
 
             document.querySelectorAll('.day-date').forEach((label, i) => {
                 let d = new Date(monday);
@@ -178,7 +176,7 @@
                 row.className = "border-b border-gray-50 hover:bg-gray-50/50 transition-colors";
                 let weeklyTotal = 0;
                 
-                let html = `<td class="p-5 font-medium text-gray-700 border-r cursor-pointer truncate" onclick="editName(${empIdx})">${emp.name}</td>`;
+                let html = `<td class="p-5 font-medium text-gray-700 border-r cursor-pointer truncate text-xs" title="${emp.name}" onclick="editName(${empIdx})">${emp.name}</td>`;
                 
                 emp.schedule.forEach((code, dayIdx) => {
                     const net = getNetHours(code);
@@ -187,7 +185,7 @@
                     html += `
                         <td class="p-2 text-center border-r border-gray-50/50">
                             <select onchange="updateShift(${empIdx}, ${dayIdx}, this.value)" 
-                                    class="w-full rounded-lg py-2.5 text-center font-medium text-[11px] cursor-pointer transition-all ${code ? 'shift-'+code : 'shift-Empty'}">
+                                    class="w-full rounded-lg py-2 text-center font-medium text-[11px] cursor-pointer transition-all ${code ? 'shift-'+code : 'shift-Empty'}">
                                 ${Object.keys(rawHours).map(opt => `<option value="${opt}" ${opt === code ? 'selected' : ''}>${opt || '-'}</option>`).join('')}
                             </select>
                         </td>`;
@@ -226,26 +224,14 @@
             updateDates();
         }
 
-        function updateShift(empIdx, dayIdx, value) { 
-            team[empIdx].schedule[dayIdx] = value; 
-            saveData();
-            renderPlanning(); 
-        }
-
-        function editName(index) { 
-            const n = prompt("Nom :", team[index].name); 
-            if(n) { team[index].name = n; saveData(); renderPlanning(); }
-        }
-
-        function addNewEmployee() { 
-            const n = prompt("Nom :"); 
-            if(n) { team.push({name: n, schedule: ["","","","","","",""]}); saveData(); renderPlanning(); }
-        }
+        function updateShift(empIdx, dayIdx, value) { team[empIdx].schedule[dayIdx] = value; saveData(); renderPlanning(); }
+        function editName(index) { const n = prompt("Nom :", team[index].name); if(n) { team[index].name = n; saveData(); renderPlanning(); }}
+        function addNewEmployee() { const n = prompt("Nom :"); if(n) { team.push({name: n, schedule: ["","","","","","",""]}); saveData(); renderPlanning(); }}
         
         function renderDailyTotals(totals) {
             const footerRow = document.getElementById('totalDailyRow');
             let html = `<td class="p-5 border-r text-gray-400 text-[9px] font-medium uppercase italic">Heures Jour</td>`;
-            totals.forEach(t => { html += `<td class="p-4 text-center text-gray-800 font-light-custom text-base">${t}h</td>`; });
+            totals.forEach(t => { html += `<td class="p-4 text-center text-gray-800 font-light text-base">${t}h</td>`; });
             html += `<td class="bg-indigo-50/10"></td>`;
             footerRow.innerHTML = html;
         }
