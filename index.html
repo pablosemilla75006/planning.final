@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TeamPlanner Pro</title>
+    <title>Pabapp - Gestion Planning</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -23,7 +23,7 @@
 
     <nav class="bg-white border-b border-gray-100 p-5 flex justify-between items-center sticky top-0 z-50">
         <div class="flex items-center gap-10">
-            <h1 class="text-xl font-medium tracking-tight text-gray-900">Team<span class="text-indigo-500">Planner</span></h1>
+            <h1 class="text-2xl font-semibold tracking-tighter text-gray-900">Pab<span class="text-indigo-600">app</span></h1>
             <div class="flex items-center bg-gray-50 border border-gray-100 rounded-full px-2 py-1 gap-1">
                 <button onclick="changeWeek(-1)" class="p-2 hover:text-indigo-500 transition-colors">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m15 18-6-6 6-6"/></svg>
@@ -36,7 +36,7 @@
         </div>
         <div class="flex items-center gap-3">
             <button onclick="toggleView('billing')" id="billingBtn" class="text-gray-500 hover:text-indigo-500 text-sm font-medium px-4 py-2">Bilan Mensuel</button>
-            <button onclick="addNewEmployee()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-light-custom hover:bg-indigo-700 shadow-sm transition-all">+ Nouveau Collaborateur</button>
+            <button onclick="addNewEmployee()" class="bg-gray-900 text-white px-5 py-2.5 rounded-full text-sm font-light-custom hover:bg-indigo-700 shadow-sm transition-all">+ Nouveau Collaborateur</button>
         </div>
     </nav>
 
@@ -60,7 +60,7 @@
                 <tbody id="tableBody"></tbody>
                 <tfoot>
                     <tr id="totalDailyRow" class="bg-gray-50/30 font-light-custom border-t border-gray-100">
-                        <td class="p-5 border-r text-gray-400 text-[10px] uppercase italic text-[9px]">Total Heures Nettes / Jour</td>
+                        <td class="p-5 border-r text-gray-400 text-[10px] uppercase italic text-[9px]">Heures Nettes / Jour</td>
                     </tr>
                 </tfoot>
             </table>
@@ -70,14 +70,14 @@
     <!-- VUE BILAN MENSUEL -->
     <main id="billingView" class="hidden p-8 max-w-4xl mx-auto">
         <button onclick="toggleView('planning')" class="text-indigo-500 text-sm font-medium mb-4 flex items-center gap-2">← Retour au planning</button>
-        <h2 class="text-3xl font-light-custom text-gray-900 mb-8">Bilan d'activité mensuel <span id="monthLabel" class="text-gray-400 italic"></span></h2>
+        <h2 class="text-3xl font-light-custom text-gray-900 mb-8">Bilan Pab<span class="text-indigo-600 font-medium">app</span> <span id="monthLabel" class="text-gray-400 italic"></span></h2>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <table class="w-full text-left text-sm">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="p-5 font-medium text-gray-500">Employé</th>
                         <th class="p-5 font-medium text-gray-500 text-center">Heures Mensuelles (Est.)</th>
-                        <th class="p-5 font-medium text-gray-500 text-center">Coût Estimé</th>
+                        <th class="p-5 font-medium text-gray-500 text-center">Coût Estimé (12€/h)</th>
                     </tr>
                 </thead>
                 <tbody id="billingBody"></tbody>
@@ -88,8 +88,7 @@
     <script>
         const rawHours = { 'X': 12.5, 'C': 10, 'PC': 4, 'AM': 0, 'Off': 0, 'ABS': 0, '': 0 };
         
-        // --- TOUTE VOTRE ÉQUIPE EST ICI ---
-        let team = [
+        let defaultTeam = [
             { name: "Pablo", schedule: ["Off", "C", "C", "X", "X", "C", "Off"] },
             { name: "Antoine", schedule: ["C", "C", "C", "Off", "Off", "X", "C"] },
             { name: "Basile", schedule: ["C", "Off", "Off", "C", "C", "C", "X"] },
@@ -105,6 +104,13 @@
             { name: "Artem", schedule: ["C", "C", "C", "C", "X", "Off", "Off"] },
             { name: "Celine", schedule: ["Off", "Off", "C", "C", "C", "C", "X"] }
         ];
+
+        // Charger les données ou utiliser les données par défaut
+        let team = JSON.parse(localStorage.getItem('pabapp_data')) || defaultTeam;
+
+        function saveData() {
+            localStorage.setItem('pabapp_data', JSON.stringify(team));
+        }
 
         function getNetHours(code) {
             let brute = rawHours[code] || 0;
@@ -192,9 +198,21 @@
             updateDates();
         }
 
-        function updateShift(empIdx, dayIdx, value) { team[empIdx].schedule[dayIdx] = value; renderPlanning(); }
-        function editName(index) { const n = prompt("Nom :", team[index].name); if(n) { team[index].name = n; renderPlanning(); }}
-        function addNewEmployee() { const n = prompt("Nom :"); if(n) { team.push({name: n, schedule: ["","","","","","",""]}); renderPlanning(); }}
+        function updateShift(empIdx, dayIdx, value) { 
+            team[empIdx].schedule[dayIdx] = value; 
+            saveData();
+            renderPlanning(); 
+        }
+
+        function editName(index) { 
+            const n = prompt("Nom :", team[index].name); 
+            if(n) { team[index].name = n; saveData(); renderPlanning(); }
+        }
+
+        function addNewEmployee() { 
+            const n = prompt("Nom :"); 
+            if(n) { team.push({name: n, schedule: ["","","","","","",""]}); saveData(); renderPlanning(); }
+        }
         
         function renderDailyTotals(totals) {
             const footerRow = document.getElementById('totalDailyRow');
