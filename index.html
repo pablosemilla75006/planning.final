@@ -7,20 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #fcfcfd; 
-            color: #1a1a1a;
-        }
-        /* Masquer les flèches du menu déroulant */
-        select {
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            outline: none;
-            border: none;
-            background: transparent;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #fcfcfd; color: #1a1a1a; }
+        select { appearance: none; -webkit-appearance: none; outline: none; border: none; background: transparent; }
         .shift-X { background-color: #E3A857; color: white; }
         .shift-C { background-color: #C1E1C1; color: #1e4620; }
         .shift-PC { background-color: #F7CAC9; color: #721c24; }
@@ -28,7 +16,6 @@
         .shift-Off { background-color: #F8C3CD; color: #702963; }
         .shift-ABS { background-color: #D3D3D3; color: #333333; }
         .shift-Empty { background-color: #ffffff; border: 1px dashed #e2e8f0; color: #94a3b8; }
-        
         .font-light-custom { font-weight: 300; }
     </style>
 </head>
@@ -37,7 +24,6 @@
     <nav class="bg-white border-b border-gray-100 p-5 flex justify-between items-center sticky top-0 z-50">
         <div class="flex items-center gap-10">
             <h1 class="text-xl font-medium tracking-tight text-gray-900">Team<span class="text-indigo-500">Planner</span></h1>
-            
             <div class="flex items-center bg-gray-50 border border-gray-100 rounded-full px-2 py-1 gap-1">
                 <button onclick="changeWeek(-1)" class="p-2 hover:text-indigo-500 transition-colors">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m15 18-6-6 6-6"/></svg>
@@ -48,18 +34,13 @@
                 </button>
             </div>
         </div>
-
         <div class="flex items-center gap-3">
-            <button onclick="toggleView('billing')" id="billingBtn" class="text-gray-500 hover:text-indigo-500 text-sm font-medium px-4 py-2 transition-all">
-                Bilan Mensuel
-            </button>
-            <button onclick="addNewEmployee()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-light-custom hover:bg-indigo-700 transition-all shadow-sm">
-                + Nouveau Collaborateur
-            </button>
+            <button onclick="toggleView('billing')" id="billingBtn" class="text-gray-500 hover:text-indigo-500 text-sm font-medium px-4 py-2">Bilan Mensuel</button>
+            <button onclick="addNewEmployee()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-light-custom hover:bg-indigo-700 shadow-sm transition-all">+ Nouveau Collaborateur</button>
         </div>
     </nav>
 
-    <!-- VUE PLANNING (Par défaut) -->
+    <!-- VUE PLANNING -->
     <main id="planningView" class="p-8 max-w-[1600px] mx-auto">
         <div class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
             <table class="w-full text-sm text-left border-collapse">
@@ -79,34 +60,24 @@
                 <tbody id="tableBody"></tbody>
                 <tfoot>
                     <tr id="totalDailyRow" class="bg-gray-50/30 font-light-custom border-t border-gray-100">
-                        <td class="p-5 border-r text-gray-400 text-[10px] uppercase">Heures jour</td>
+                        <td class="p-5 border-r text-gray-400 text-[10px] uppercase italic text-[9px]">Total Heures Nettes / Jour</td>
                     </tr>
                 </tfoot>
             </table>
         </div>
     </main>
 
-    <!-- VUE BILAN MENSUEL (Masqué par défaut) -->
+    <!-- VUE BILAN MENSUEL -->
     <main id="billingView" class="hidden p-8 max-w-4xl mx-auto">
-        <div class="flex justify-between items-end mb-8">
-            <div>
-                <button onclick="toggleView('planning')" class="text-indigo-500 text-sm font-medium flex items-center gap-2 mb-2">
-                    ← Retour au planning
-                </button>
-                <h2 class="text-3xl font-light-custom text-gray-900">Bilan d'activité mensuel</h2>
-            </div>
-            <div class="text-right">
-                <span id="currentMonthLabel" class="text-lg font-medium text-gray-500 italic"></span>
-            </div>
-        </div>
-
+        <button onclick="toggleView('planning')" class="text-indigo-500 text-sm font-medium mb-4 flex items-center gap-2">← Retour au planning</button>
+        <h2 class="text-3xl font-light-custom text-gray-900 mb-8">Bilan d'activité mensuel <span id="monthLabel" class="text-gray-400 italic"></span></h2>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <table class="w-full text-left text-sm">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="p-5 font-medium text-gray-500">Employé</th>
-                        <th class="p-5 font-medium text-gray-500 text-center">Total Heures</th>
-                        <th class="p-5 font-medium text-gray-500 text-center">Estimation Coût (12€/h)</th>
+                        <th class="p-5 font-medium text-gray-500 text-center">Heures Mensuelles (Est.)</th>
+                        <th class="p-5 font-medium text-gray-500 text-center">Coût Estimé</th>
                     </tr>
                 </thead>
                 <tbody id="billingBody"></tbody>
@@ -116,6 +87,8 @@
 
     <script>
         const rawHours = { 'X': 12.5, 'C': 10, 'PC': 4, 'AM': 0, 'Off': 0, 'ABS': 0, '': 0 };
+        
+        // --- TOUTE VOTRE ÉQUIPE EST ICI ---
         let team = [
             { name: "Pablo", schedule: ["Off", "C", "C", "X", "X", "C", "Off"] },
             { name: "Antoine", schedule: ["C", "C", "C", "Off", "Off", "X", "C"] },
@@ -123,7 +96,14 @@
             { name: "Eliot", schedule: ["C", "C", "C", "C", "X", "Off", "Off"] },
             { name: "Florian", schedule: ["C", "C", "Off", "Off", "C", "C", "X"] },
             { name: "Giulia", schedule: ["Off", "Off", "C", "C", "C", "X", "C"] },
-            { name: "Maria", schedule: ["Off", "Off", "C", "C", "C", "C", "X"] }
+            { name: "Maria", schedule: ["Off", "Off", "C", "C", "C", "C", "X"] },
+            { name: "Snow", schedule: ["C", "C", "C", "Off", "Off", "C", "X"] },
+            { name: "Selah", schedule: ["", "C", "", "C", "", "", ""] },
+            { name: "Andrew", schedule: ["Off", "Off", "C", "C", "C", "C", "X"] },
+            { name: "Valentine", schedule: ["C", "C", "C", "", "", "", "C"] },
+            { name: "Solal", schedule: ["Off", "C", "C", "C", "C", "X", "Off"] },
+            { name: "Artem", schedule: ["C", "C", "C", "C", "X", "Off", "Off"] },
+            { name: "Celine", schedule: ["Off", "Off", "C", "C", "C", "C", "X"] }
         ];
 
         function getNetHours(code) {
@@ -137,18 +117,6 @@
             if(view === 'billing') calculateMonthlyBilling();
         }
 
-        function changeWeek(step) {
-            const selector = document.getElementById('weekSelector');
-            const [year, week] = selector.value.split('-W').map(Number);
-            let date = new Date(year, 0, 1 + (week - 1) * 7);
-            date.setDate(date.getDate() + (step * 7));
-            const newDate = new Date(date.getTime() + 3 * 24 * 60 * 60 * 1000);
-            const newYear = newDate.getFullYear();
-            const weekNumber = Math.ceil(( ( (newDate - new Date(newYear, 0, 1)) / 8.64e7) + 1) / 7);
-            selector.value = `${newYear}-W${String(weekNumber).padStart(2, '0')}`;
-            updateDates();
-        }
-
         function updateDates() {
             const weekVal = document.getElementById('weekSelector').value;
             const [year, week] = weekVal.split('-W');
@@ -157,7 +125,7 @@
             const diff = date.getDate() - day + (day == 0 ? -6:1);
             const monday = new Date(date.setDate(diff));
             
-            document.getElementById('currentMonthLabel').innerText = monday.toLocaleDateString('fr-FR', {month: 'long', year: 'numeric'});
+            document.getElementById('monthLabel').innerText = monday.toLocaleDateString('fr-FR', {month: 'long', year: 'numeric'});
 
             document.querySelectorAll('.day-date').forEach((label, i) => {
                 let d = new Date(monday);
@@ -185,7 +153,7 @@
                     html += `
                         <td class="p-2 text-center border-r border-gray-50/50">
                             <select onchange="updateShift(${empIdx}, ${dayIdx}, this.value)" 
-                                    class="w-full rounded-lg py-2.5 text-center font-medium text-[11px] cursor-pointer shadow-sm transition-all ${code ? 'shift-'+code : 'shift-Empty'}">
+                                    class="w-full rounded-lg py-2.5 text-center font-medium text-[11px] cursor-pointer shadow-sm ${code ? 'shift-'+code : 'shift-Empty'}">
                                 ${Object.keys(rawHours).map(opt => `<option value="${opt}" ${opt === code ? 'selected' : ''}>${opt || '-'}</option>`).join('')}
                             </select>
                         </td>`;
@@ -200,20 +168,28 @@
         function calculateMonthlyBilling() {
             const tbody = document.getElementById('billingBody');
             tbody.innerHTML = "";
-            
             team.forEach(emp => {
-                let totalH = emp.schedule.reduce((acc, code) => acc + getNetHours(code), 0);
-                // Simulation mensuelle : (Total semaine * 4.33 pour avoir une moyenne de mois)
-                let monthH = (totalH * 4.33).toFixed(1);
-                
-                let row = `
+                let weekH = emp.schedule.reduce((acc, code) => acc + getNetHours(code), 0);
+                let monthH = (weekH * 4.33).toFixed(1);
+                tbody.innerHTML += `
                     <tr class="border-b border-gray-50">
                         <td class="p-5 font-medium text-gray-700">${emp.name}</td>
                         <td class="p-5 text-center text-gray-600">${monthH}h</td>
                         <td class="p-5 text-center font-medium text-green-600">${(monthH * 12).toFixed(2)}€</td>
                     </tr>`;
-                tbody.innerHTML += row;
             });
+        }
+
+        function changeWeek(step) {
+            const selector = document.getElementById('weekSelector');
+            const [year, week] = selector.value.split('-W').map(Number);
+            let date = new Date(year, 0, 1 + (week - 1) * 7);
+            date.setDate(date.getDate() + (step * 7));
+            const newDate = new Date(date.getTime() + 3 * 24 * 60 * 60 * 1000);
+            const newYear = newDate.getFullYear();
+            const weekNumber = Math.ceil((((newDate - new Date(newYear, 0, 1)) / 86400000) + 1) / 7);
+            selector.value = `${newYear}-W${String(weekNumber).padStart(2, '0')}`;
+            updateDates();
         }
 
         function updateShift(empIdx, dayIdx, value) { team[empIdx].schedule[dayIdx] = value; renderPlanning(); }
@@ -222,7 +198,7 @@
         
         function renderDailyTotals(totals) {
             const footerRow = document.getElementById('totalDailyRow');
-            let html = `<td class="p-5 border-r text-gray-400 text-[10px] font-medium uppercase">Heures jour</td>`;
+            let html = `<td class="p-5 border-r text-gray-400 text-[10px] font-medium uppercase italic">Total Heures Jour</td>`;
             totals.forEach(t => { html += `<td class="p-4 text-center text-gray-800 font-light-custom text-base">${t}h</td>`; });
             html += `<td class="bg-indigo-50/10"></td>`;
             footerRow.innerHTML = html;
@@ -231,9 +207,8 @@
         // Init avec semaine actuelle
         const now = new Date();
         const startOfYear = new Date(now.getFullYear(), 0, 1);
-        const week = Math.ceil((((now - startOfYear) / 86400000) + startOfYear.getDay() + 1) / 7);
-        document.getElementById('weekSelector').value = `${now.getFullYear()}-W${String(week).padStart(2, '0')}`;
-        
+        const currentWeek = Math.ceil((((now - startOfYear) / 86400000) + startOfYear.getDay() + 1) / 7);
+        document.getElementById('weekSelector').value = `${now.getFullYear()}-W${String(currentWeek).padStart(2, '0')}`;
         updateDates();
     </script>
 </body>
