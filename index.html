@@ -18,7 +18,18 @@
         .shift-Off { background-color: #F8C3CD; color: #702963; }
         .shift-ABS { background-color: #D3D3D3; color: #333333; }
         .shift-Empty { background-color: #ffffff; border: 1px dashed #e2e8f0; color: #94a3b8; }
-        .font-medium { font-weight: 500; }
+        
+        /* Style pour l'alerte */
+        .alert-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            margin-right: 6px;
+            position: relative;
+            cursor: help;
+        }
     </style>
 </head>
 <body>
@@ -41,10 +52,8 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <!-- Menu Export -->
             <div class="relative group">
                 <button class="text-gray-500 border border-gray-200 hover:bg-gray-50 text-sm font-medium px-4 py-2.5 rounded-full flex items-center gap-2">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     Exporter
                 </button>
                 <div class="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg hidden group-hover:block z-50">
@@ -53,7 +62,6 @@
                     <button onclick="exportData('sheets')" class="w-full text-left px-4 py-3 text-xs hover:bg-gray-50 text-gray-700">Google Sheets</button>
                 </div>
             </div>
-            
             <button onclick="toggleView('billing')" class="text-gray-500 hover:text-indigo-500 text-sm font-medium px-4 py-2">Bilan Mensuel</button>
             <button onclick="addNewEmployee()" class="bg-gray-900 text-white px-5 py-2.5 rounded-full text-sm hover:bg-indigo-700 transition-all">+ Nouveau</button>
         </div>
@@ -82,7 +90,6 @@
         </div>
     </main>
 
-    <!-- VUE BILAN -->
     <main id="billingView" class="hidden p-8 max-w-4xl mx-auto">
         <button onclick="toggleView('planning')" class="text-indigo-500 text-sm font-medium mb-4 flex items-center gap-2">← Retour</button>
         <h2 class="text-3xl font-light text-gray-900 mb-8">Bilan <span class="text-indigo-600 font-medium">Pabapp</span> <span id="billingMonthLabel" class="text-gray-400 italic"></span></h2>
@@ -98,43 +105,49 @@
 
     <script>
         const rawHours = { 'X': 12.5, 'C': 10, 'PC': 4, 'AM': 0, 'Off': 0, 'ABS': 0, '': 0 };
-        let defaultTeam = [{name:"Pablo",schedule:["Off","C","C","X","X","C","Off"]},{name:"Antoine",schedule:["C","C","C","Off","Off","X","C"]},{name:"Basile",schedule:["C","Off","Off","C","C","C","X"]},{name:"Eliot",schedule:["C","C","C","C","X","Off","Off"]},{name:"Florian",schedule:["C","C","Off","Off","C","C","X"]},{name:"Giulia",schedule:["Off","Off","C","C","C","X","C"]},{name:"Maria",schedule:["Off","Off","C","C","C","C","X"]},{name:"Snow",schedule:["C","C","C","Off","Off","C","X"]},{name:"Selah",schedule:["","C","","C","","",""]},{name:"Andrew",schedule:["Off","Off","C","C","C","C","X"]},{name:"Valentine",schedule:["C","C","C","","","","C"]},{name:"Solal",schedule:["Off","C","C","C","C","X","Off"]},{name:"Artem",schedule:["C","C","C","C","X","Off","Off"]},{name:"Celine",schedule:["Off","Off","C","C","C","C","X"]}];
-        
-        let team = JSON.parse(localStorage.getItem('pabapp_data')) || defaultTeam;
-        function saveData() { localStorage.setItem('pabapp_data', JSON.stringify(team)); }
-        function getNetHours(code) { let brute = rawHours[code] || 0; return brute > 6 ? brute - 0.5 : brute; }
+        let team = JSON.parse(localStorage.getItem('pabapp_data')) || [
+            {name:"Pablo",schedule:["Off","C","C","X","X","C","Off"]},
+            {name:"Antoine",schedule:["C","C","C","Off","Off","X","C"]},
+            {name:"Basile",schedule:["C","Off","Off","C","C","C","X"]},
+            {name:"Eliot",schedule:["C","C","C","C","X","Off","Off"]},
+            {name:"Florian",schedule:["C","C","Off","Off","C","C","X"]},
+            {name:"Giulia",schedule:["Off","Off","C","C","C","X","C"]},
+            {name:"Maria",schedule:["Off","Off","C","C","C","C","X"]},
+            {name:"Snow",schedule:["C","C","C","Off","Off","C","X"]},
+            {name:"Selah",schedule:["","C","","C","","",""]},
+            {name:"Andrew",schedule:["Off","Off","C","C","C","C","X"]},
+            {name:"Valentine",schedule:["C","C","C","","","","C"]},
+            {name:"Solal",schedule:["Off","C","C","C","C","X","Off"]},
+            {name:"Artem",schedule:["C","C","C","C","X","Off","Off"]},
+            {name:"Celine",schedule:["Off","Off","C","C","C","C","X"]}
+        ];
 
-        function toggleView(view) {
-            document.getElementById('planningView').classList.toggle('hidden', view === 'billing');
-            document.getElementById('billingView').classList.toggle('hidden', view === 'planning');
-            if(view === 'billing') calculateMonthlyBilling();
-        }
-
-        function updateDates() {
-            const weekVal = document.getElementById('weekSelector').value;
-            const [year, week] = weekVal.split('-W');
-            let date = new Date(year, 0, 1 + (week - 1) * 7);
-            const monday = new Date(date.setDate(date.getDate() - date.getDay() + 1));
-            const monthText = monday.toLocaleDateString('fr-FR', {month: 'long', year: 'numeric'});
+        function checkScheduleAlerte(schedule) {
+            const counts = { 'C': 0, 'X': 0, 'Off': 0 };
+            schedule.forEach(s => { if(counts[s] !== undefined) counts[s]++; });
             
-            document.getElementById('navMonthDisplay').innerText = monthText;
-            document.getElementById('tableMonthHeader').innerText = "Planning de " + monthText;
-            document.getElementById('billingMonthLabel').innerText = monthText;
-
-            document.querySelectorAll('.day-date').forEach((label, i) => {
-                let d = new Date(monday); d.setDate(monday.getDate() + i);
-                label.innerText = d.toLocaleDateString('fr-FR', { day: '2-digit' });
-            });
-            renderPlanning();
+            let messages = [];
+            if (counts['C'] !== 4) messages.push(`${counts['C']}/4 C`);
+            if (counts['X'] !== 1) messages.push(`${counts['X']}/1 X`);
+            if (counts['Off'] !== 2) messages.push(`${counts['Off']}/2 Off`);
+            
+            return messages.length > 0 ? messages.join(' | ') : null;
         }
 
         function renderPlanning() {
             const tbody = document.getElementById('tableBody'); tbody.innerHTML = "";
             let dailyTotals = [0,0,0,0,0,0,0];
+            
             team.forEach((emp, empIdx) => {
+                const alerte = checkScheduleAlerte(emp.schedule);
                 let row = document.createElement('tr'); row.className = "border-b border-gray-50 hover:bg-gray-50/50";
                 let weeklyTotal = 0;
-                let html = `<td class="p-5 font-medium text-gray-700 border-r truncate text-xs cursor-pointer" onclick="editName(${empIdx})">${emp.name}</td>`;
+                
+                let html = `<td class="p-5 font-medium text-gray-700 border-r truncate text-xs flex items-center">
+                    ${alerte ? `<span class="alert-dot" title="Alerte Quota : ${alerte}"></span>` : ''}
+                    <span class="cursor-pointer" onclick="editName(${empIdx})">${emp.name}</span>
+                </td>`;
+                
                 emp.schedule.forEach((code, dayIdx) => {
                     const net = getNetHours(code); weeklyTotal += net; dailyTotals[dayIdx] += net;
                     html += `<td class="p-2 text-center border-r border-gray-50/50">
@@ -148,6 +161,41 @@
             renderDailyTotals(dailyTotals);
         }
 
+        function saveData() { localStorage.setItem('pabapp_data', JSON.stringify(team)); }
+        function getNetHours(code) { let brute = rawHours[code] || 0; return brute > 6 ? brute - 0.5 : brute; }
+        function updateShift(empIdx, dayIdx, value) { team[empIdx].schedule[dayIdx] = value; saveData(); renderPlanning(); }
+        function editName(index) { const n = prompt("Nom :", team[index].name); if(n) { team[index].name = n; saveData(); renderPlanning(); }}
+        function addNewEmployee() { const n = prompt("Nom :"); if(n) { team.push({name: n, schedule: ["","","","","","",""]}); saveData(); renderPlanning(); }}
+        
+        function toggleView(view) {
+            document.getElementById('planningView').classList.toggle('hidden', view === 'billing');
+            document.getElementById('billingView').classList.toggle('hidden', view === 'planning');
+            if(view === 'billing') calculateMonthlyBilling();
+        }
+
+        function updateDates() {
+            const weekVal = document.getElementById('weekSelector').value;
+            const [year, week] = weekVal.split('-W');
+            let date = new Date(year, 0, 1 + (week - 1) * 7);
+            const monday = new Date(date.setDate(date.getDate() - date.getDay() + 1));
+            const monthText = monday.toLocaleDateString('fr-FR', {month: 'long', year: 'numeric'});
+            document.getElementById('navMonthDisplay').innerText = monthText;
+            document.getElementById('tableMonthHeader').innerText = "Planning de " + monthText;
+            document.querySelectorAll('.day-date').forEach((label, i) => {
+                let d = new Date(monday); d.setDate(monday.getDate() + i);
+                label.innerText = d.toLocaleDateString('fr-FR', { day: '2-digit' });
+            });
+            renderPlanning();
+        }
+
+        function renderDailyTotals(totals) {
+            const footerRow = document.getElementById('totalDailyRow');
+            let html = `<td class="p-5 border-r text-gray-400 text-[9px] font-medium uppercase italic">Heures Jour</td>`;
+            totals.forEach(t => { html += `<td class="p-4 text-center text-gray-800 text-base">${t}h</td>`; });
+            html += `<td class="bg-indigo-50/10"></td>`;
+            footerRow.innerHTML = html;
+        }
+
         function calculateMonthlyBilling() {
             const tbody = document.getElementById('billingBody'); tbody.innerHTML = "";
             team.forEach(emp => {
@@ -157,29 +205,21 @@
             });
         }
 
-        // --- FONCTION EXPORT ---
         function exportData(type) {
-            let csvContent = "\uFEFF"; // BOM pour gérer les accents
-            const separator = (type === 'excel-win') ? ";" : ","; // Point-virgule pour Excel Windows, virgule pour Mac/Sheets
-            
-            // En-têtes
+            let csvContent = "\uFEFF";
+            const separator = (type === 'excel-win') ? ";" : ",";
             csvContent += `Collaborateur${separator}Lun${separator}Mar${separator}Mer${separator}Jeu${separator}Ven${separator}Sam${separator}Dim${separator}Total Net\n`;
-            
-            // Données
             team.forEach(emp => {
                 let weeklyTotal = emp.schedule.reduce((acc, code) => acc + getNetHours(code), 0);
                 let row = [emp.name, ...emp.schedule, weeklyTotal + "h"];
                 csvContent += row.join(separator) + "\n";
             });
-
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
             const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
             link.setAttribute("href", url);
-            link.setAttribute("download", `pabapp_planning_${document.getElementById('navMonthDisplay').innerText}.csv`);
-            document.body.appendChild(link);
+            link.setAttribute("download", `pabapp_planning.csv`);
             link.click();
-            document.body.removeChild(link);
         }
 
         function changeWeek(step) {
@@ -192,18 +232,6 @@
             const weekNumber = Math.ceil((((newDate - new Date(newYear, 0, 1)) / 86400000) + 1) / 7);
             selector.value = `${newYear}-W${String(weekNumber).padStart(2, '0')}`;
             updateDates();
-        }
-
-        function updateShift(empIdx, dayIdx, value) { team[empIdx].schedule[dayIdx] = value; saveData(); renderPlanning(); }
-        function editName(index) { const n = prompt("Nom :", team[index].name); if(n) { team[index].name = n; saveData(); renderPlanning(); }}
-        function addNewEmployee() { const n = prompt("Nom :"); if(n) { team.push({name: n, schedule: ["","","","","","",""]}); saveData(); renderPlanning(); }}
-        
-        function renderDailyTotals(totals) {
-            const footerRow = document.getElementById('totalDailyRow');
-            let html = `<td class="p-5 border-r text-gray-400 text-[9px] font-medium uppercase italic">Heures Jour</td>`;
-            totals.forEach(t => { html += `<td class="p-4 text-center text-gray-800 text-base">${t}h</td>`; });
-            html += `<td class="bg-indigo-50/10"></td>`;
-            footerRow.innerHTML = html;
         }
 
         const now = new Date();
