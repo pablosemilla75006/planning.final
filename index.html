@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pabapp - Cloud Sync Pro</title>
+    <title>Pabapp - Live Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
@@ -11,18 +11,16 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // ==========================================
-        // COLLE TES INFOS FIREBASE CI-DESSOUS
-        // ==========================================
+        // CONFIGURATION AUTOMATISÉE
         const firebaseConfig = {
-          apiKey: "AIzaSyDBYfbe7TqTc9geIWjUeNTsxeXXytaHoMk",
-          authDomain: "pabapp-d9067.firebaseapp.com",
-          databaseURL: "https://pabapp-d9067-default-rtdb.europe-west1.firebasedatabase.app",
-          projectId: "pabapp-d9067",
-          storageBucket: "pabapp-d9067.firebasestorage.app",
-          messagingSenderId: "311970041106",
-          appId: "1:311970041106:web:c6be2a818ff4a0eb7277cb",
-          measurementId: "G-GKGSX0YSNH"
+            apiKey: "AIzaSyDBYfbe7TqTc9geIWjUeNTsxeXXytaHoMk",
+            authDomain: "pabapp-d9067.firebaseapp.com",
+            databaseURL: "https://pabapp-d9067-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "pabapp-d9067",
+            storageBucket: "pabapp-d9067.firebasestorage.app",
+            messagingSenderId: "311970041106",
+            appId: "1:311970041106:web:c6be2a818ff4a0eb7277cb",
+            measurementId: "G-GKGSX0YSNH"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -32,10 +30,16 @@
         window.allSchedules = {};
         window.currentWeekKey = "";
 
+        // ÉCOUTE TEMPS RÉEL
         onValue(dbRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 window.allSchedules = data;
+                if (!window.currentWeekKey) {
+                    window.currentWeekKey = getWeekKey(new Date());
+                    document.getElementById('weekSelector').value = window.currentWeekKey;
+                    updateDateLabels();
+                }
                 renderPlanning();
             } else {
                 saveMasterData(true); 
@@ -47,6 +51,8 @@
                 const now = new Date();
                 const weekKey = getWeekKey(now);
                 window.allSchedules[weekKey] = JSON.parse(JSON.stringify(BASE_TEMPLATE));
+                window.currentWeekKey = weekKey;
+                document.getElementById('weekSelector').value = weekKey;
             }
             set(dbRef, window.allSchedules);
         };
@@ -64,28 +70,19 @@
         .shift-Off { background-color: #F8C3CD; color: #702963; }
         .shift-ABS { background-color: #D3D3D3; color: #333333; }
         .shift-Empty { background-color: #ffffff; border: 1px dashed #e2e8f0; color: #94a3b8; }
-        
-        /* Alerte par transparence (version renforcée) */
-        .row-alert {
-            background-color: rgba(254, 202, 202, 0.8) !important;
-            border-left: 6px solid #dc2626;
-        }
+        .row-alert { background-color: rgba(254, 202, 202, 0.8) !important; border-left: 6px solid #dc2626; }
     </style>
 </head>
 <body>
 
     <nav class="bg-white border-b border-gray-100 p-5 flex justify-between items-center sticky top-0 z-50">
         <div class="flex items-center gap-10">
-            <h1 class="text-2xl font-semibold tracking-tighter text-gray-900">Pab<span class="text-indigo-600">app</span> <span class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full ml-2 align-middle font-bold tracking-widest">LIVE</span></h1>
+            <h1 class="text-2xl font-semibold tracking-tighter text-gray-900">Pab<span class="text-indigo-600">app</span> <span class="text-[9px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full ml-2 align-middle font-bold tracking-widest uppercase">Connecté</span></h1>
             <div class="flex items-center gap-4">
                 <div class="flex items-center bg-gray-50 border border-gray-100 rounded-full px-2 py-1 gap-1">
-                    <button onclick="changeWeek(-1)" class="p-2 hover:text-indigo-500">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m15 18-6-6 6-6"/></svg>
-                    </button>
+                    <button onclick="changeWeek(-1)" class="p-2 hover:text-indigo-500 text-xs">◀</button>
                     <input type="week" id="weekSelector" onchange="loadWeekData()" class="bg-transparent text-xs font-medium text-gray-600 outline-none">
-                    <button onclick="changeWeek(1)" class="p-2 hover:text-indigo-500">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m9 18 6-6 6-6"/></svg>
-                    </button>
+                    <button onclick="changeWeek(1)" class="p-2 hover:text-indigo-500 text-xs">▶</button>
                 </div>
                 <span id="navMonthDisplay" class="text-sm font-medium text-indigo-500 bg-indigo-50 px-4 py-1.5 rounded-full uppercase tracking-wider text-[10px]"></span>
             </div>
@@ -280,10 +277,11 @@
             return `${date.getFullYear()}-W${String(num).padStart(2, '0')}`;
         }
 
-        // Init
+        // Init par défaut
         const now = new Date();
-        document.getElementById('weekSelector').value = getWeekKey(now);
-        window.currentWeekKey = getWeekKey(now);
+        const initialWeek = getWeekKey(now);
+        window.currentWeekKey = initialWeek;
+        document.getElementById('weekSelector').value = initialWeek;
         updateDateLabels();
     </script>
 </body>
