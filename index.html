@@ -19,10 +19,10 @@
         .shift-ABS { background-color: #D3D3D3; color: #333333; }
         .shift-Empty { background-color: #ffffff; border: 1px dashed #e2e8f0; color: #94a3b8; }
         
-        /* Style pour la ligne en alerte */
+        /* ALERTE RENFORCÉE */
         .row-alert {
-            background-color: rgba(254, 226, 226, 0.4) !important; /* Rouge très léger */
-            border-left: 4px solid #ef4444;
+            background-color: rgba(254, 202, 202, 0.8) !important; /* Rouge plus opaque */
+            border-left: 6px solid #dc2626; /* Bordure plus large et plus sombre */
         }
     </style>
 </head>
@@ -119,7 +119,6 @@
         function isScheduleInvalid(schedule) {
             const counts = { 'C': 0, 'X': 0, 'Off': 0 };
             schedule.forEach(s => { if(counts[s] !== undefined) counts[s]++; });
-            // Retourne vrai si les quotas ne sont pas respectés
             return (counts['C'] !== 4 || counts['X'] !== 1 || counts['Off'] !== 2);
         }
 
@@ -130,7 +129,6 @@
             team.forEach((emp, empIdx) => {
                 const invalid = isScheduleInvalid(emp.schedule);
                 let row = document.createElement('tr'); 
-                // Application de la classe row-alert si invalide
                 row.className = `border-b border-gray-50 hover:bg-gray-100/50 transition-colors ${invalid ? 'row-alert' : ''}`;
                 
                 let weeklyTotal = 0;
