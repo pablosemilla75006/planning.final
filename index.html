@@ -11,7 +11,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // CONFIGURATION FIREBASE
+        // CONFIGURATION FIREBASE AUTOMATISÉE
         const firebaseConfig = {
             apiKey: "AIzaSyDBYfbe7TqTc9geIWjUeNTsxeXXytaHoMk",
             authDomain: "pabapp-d9067.firebaseapp.com",
@@ -52,7 +52,6 @@
                 }
                 renderPlanning();
             } else {
-                // Si la base est neuve, on force l'initialisation
                 window.allSchedules = {};
                 saveMasterData(true); 
             }
@@ -74,9 +73,14 @@
         table { table-layout: fixed; width: 100%; }
         select { appearance: none; outline: none; border: none; background: transparent; width: 100%; text-align-last: center; cursor: pointer; }
         .shift-cell { width: 85px; }
+        
+        /* COULEURS DES SHIFTS */
         .shift-X { background-color: #E3A857; color: white; }
         .shift-C { background-color: #C1E1C1; color: #1e4620; }
-        .shift-PC { background-color: #F7CAC9; color: #721c24; }
+        
+        /* MODIFICATION : VERT SAPIN PASTEL POUR PC */
+        .shift-PC { background-color: #4A6762; color: #ffffff; } 
+        
         .shift-AM { background-color: #AEC6CF; color: #002366; }
         .shift-Off { background-color: #F8C3CD; color: #702963; }
         .shift-ABS { background-color: #D3D3D3; color: #333333; }
@@ -132,7 +136,7 @@
         <h2 class="text-4xl font-semibold text-gray-900 mb-8 tracking-tighter">Bilan Mensuel</h2>
         <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <table class="w-full text-left text-sm">
-                <thead class="bg-gray-50"><tr class="border-b border-gray-100"><th class="p-6 font-medium text-gray-500 uppercase text-[10px]">Employé</th><th class="p-6 font-medium text-gray-500 text-center uppercase text-[10px]">Heures/Mois (estim.)</th><th class="p-6 font-medium text-gray-500 text-center uppercase text-[10px]">Coût (12€/h)</th></tr></thead>
+                <thead class="bg-gray-50"><tr class="border-b border-gray-100"><th class="p-6 font-medium text-gray-500 uppercase text-[10px]">Employé</th><th class="p-6 font-medium text-gray-500 text-center uppercase text-[10px]">Heures/Mois</th><th class="p-6 font-medium text-gray-500 text-center uppercase text-[10px]">Coût (12€/h)</th></tr></thead>
                 <tbody id="billingBody"></tbody>
             </table>
         </div>
