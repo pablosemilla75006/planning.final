@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pabapp - Planning Persistant</title>
+    <title>Pabapp - Planning Professionnel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -90,9 +90,25 @@
 
     <script>
         const SHIFT_HOURS = { 'X': 12.5, 'C': 10, 'PC': 4, 'AM': 0, 'Off': 0, 'ABS': 0, '': 0 };
-        const DEFAULT_NAMES = ["Pablo", "Antoine", "Basile", "Eliot", "Florian", "Giulia", "Maria", "Snow", "Selah", "Andrew", "Valentine", "Solal", "Artem", "Celine"];
         
-        // Structure de données globale : { "2024-W12": [ {name: "...", schedule: [...]}, ... ] }
+        // MODÈLE DE BASE AVEC VOS SHIFTS TYPES
+        const BASE_TEMPLATE = [
+            {name:"Pablo",schedule:["Off","C","C","X","X","C","Off"]},
+            {name:"Antoine",schedule:["C","C","C","Off","Off","X","C"]},
+            {name:"Basile",schedule:["C","Off","Off","C","C","C","X"]},
+            {name:"Eliot",schedule:["C","C","C","C","X","Off","Off"]},
+            {name:"Florian",schedule:["C","C","Off","Off","C","C","X"]},
+            {name:"Giulia",schedule:["Off","Off","C","C","C","X","C"]},
+            {name:"Maria",schedule:["Off","Off","C","C","C","C","X"]},
+            {name:"Snow",schedule:["C","C","C","Off","Off","C","X"]},
+            {name:"Selah",schedule:["","C","","C","","",""]},
+            {name:"Andrew",schedule:["Off","Off","C","C","C","C","X"]},
+            {name:"Valentine",schedule:["C","C","C","","","","C"]},
+            {name:"Solal",schedule:["Off","C","C","C","C","X","Off"]},
+            {name:"Artem",schedule:["C","C","C","C","X","Off","Off"]},
+            {name:"Celine",schedule:["Off","Off","C","C","C","C","X"]}
+        ];
+        
         let allSchedules = JSON.parse(localStorage.getItem('pabapp_master_data')) || {};
         let currentWeekKey = "";
 
@@ -110,12 +126,9 @@
         function loadWeekData() {
             currentWeekKey = document.getElementById('weekSelector').value;
             
-            // Si la semaine n'existe pas, on l'initialise avec les noms par défaut et des shifts vides
+            // Si la semaine est nouvelle, on injecte le modèle de base au lieu de partir de rien
             if (!allSchedules[currentWeekKey]) {
-                allSchedules[currentWeekKey] = DEFAULT_NAMES.map(name => ({
-                    name: name,
-                    schedule: ["", "", "", "", "", "", ""]
-                }));
+                allSchedules[currentWeekKey] = JSON.parse(JSON.stringify(BASE_TEMPLATE));
             }
             
             updateDateLabels();
@@ -224,7 +237,6 @@
         document.getElementById('weekSelector').value = `${now.getFullYear()}-W${String(currentWeekNum).padStart(2, '0')}`;
         loadWeekData();
 
-        // Fonctions de navigation simples
         function toggleView(view) {
             document.getElementById('planningView').classList.toggle('hidden', view === 'billing');
             document.getElementById('billingView').classList.toggle('hidden', view === 'planning');
@@ -236,6 +248,23 @@
                     tbody.innerHTML += `<tr class="border-b border-gray-100"><td class="p-5">${emp.name}</td><td class="p-5 text-center">${(h * 4.33).toFixed(1)}h</td><td class="p-5 text-center font-medium text-green-600">${(h * 4.33 * 12).toFixed(2)}€</td></tr>`;
                 });
             }
+        }
+
+        function exportData(type) {
+            let csvContent = "\uFEFF";
+            const separator = (type === 'excel-win') ? ";" : ",";
+            csvContent += `Collaborateur${separator}Lun${separator}Mar${separator}Mer${separator}Jeu${separator}Ven${separator}Sam${separator}Dim${separator}Total Net\n`;
+            allSchedules[currentWeekKey].forEach(emp => {
+                let weeklyTotal = emp.schedule.reduce((acc, code) => acc + getNetHours(code), 0);
+                let row = [emp.name, ...emp.schedule, weeklyTotal + "h"];
+                csvContent += row.join(separator) + "\n";
+            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `pabapp_${currentWeekKey}.csv`);
+            link.click();
         }
     </script>
 </body>
