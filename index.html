@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pabapp - Export Mensuel Pro</title>
+    <title>Pabapp - Live Sync Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
@@ -66,70 +66,85 @@
     </script>
 
     <style>
+        /* INTERFACE UTILISATEUR (ÉCRAN) */
         body { font-family: 'Inter', sans-serif; background-color: #fcfcfd; color: #1a1a1a; }
-        table { table-layout: fixed; width: 100%; border-spacing: 0; border-collapse: collapse; }
+        table { table-layout: fixed; width: 100%; border-collapse: collapse; }
         select { appearance: none; outline: none; border: none; background: transparent; width: 100%; text-align-last: center; cursor: pointer; }
         
-        .shift-cell { width: 65px; border: 0.5px solid #e2e8f0; }
+        .shift-cell { width: 85px; }
         .shift-X { background-color: #E3A857; color: white; }
         .shift-C { background-color: #C1E1C1; color: #1e4620; }
         .shift-PC { background-color: #4A6762; color: #ffffff; } 
         .shift-AM { background-color: #AEC6CF; color: #002366; }
         .shift-Off { background-color: #F8C3CD; color: #702963; }
         .shift-ABS { background-color: #D3D3D3; color: #333333; }
-        .shift-Empty { background-color: #ffffff; border: 1px dashed #cbd5e1; color: #94a3b8; }
-        
-        .row-alert { background-color: rgba(254, 202, 202, 0.4) !important; border-left: 4px solid #dc2626; }
+        .shift-Empty { background-color: #ffffff; border: 1px dashed #e2e8f0; color: #94a3b8; }
+        .row-alert { background-color: rgba(254, 202, 202, 0.6) !important; border-left: 6px solid #dc2626; }
 
-        /* Style Compact "Sheet" */
-        .compact-td { padding: 4px 2px !important; font-size: 11px !important; height: 32px; }
-        .compact-th { padding: 6px 2px !important; font-size: 10px !important; background-color: #f8fafc; }
-
+        /* MISE EN PAGE EXPORT / IMPRESSION (STYLE SHEET SERRÉ) */
         @media print {
             nav, .no-print { display: none !important; }
             body { background: white; padding: 0; }
-            main { padding: 10px !important; max-width: 100% !important; }
-            .bg-white { border: none !important; box-shadow: none !important; }
-            .week-container { page-break-inside: avoid; margin-bottom: 20px; }
-            .day-date { font-size: 12px !important; }
+            main { padding: 0 !important; max-width: 100% !important; }
+            .bg-white { border: none !important; box-shadow: none !important; border-radius: 0 !important; }
+            
+            .week-container { page-break-inside: avoid; margin-bottom: 30px; border: 1px solid #000; }
+            .week-header-print { background: #f0f0f0 !important; border-bottom: 1px solid #000; padding: 5px; font-weight: bold; text-align: center; display: block !important; }
+            
+            table { border: 1px solid #000 !important; }
+            th, td { 
+                border: 1px solid #000 !important; 
+                padding: 4px 2px !important; 
+                font-size: 10px !important; 
+                height: 25px !important;
+            }
+            .day-date { font-size: 10px !important; font-weight: bold; }
+            select { font-size: 10px !important; font-weight: bold !important; -webkit-print-color-adjust: exact; }
+            .shift-cell { width: 60px !important; }
+            .bg-indigo-50\/30 { background-color: #f0f0f0 !important; -webkit-print-color-adjust: exact; }
         }
+
+        .week-header-print { display: none; }
     </style>
 </head>
 <body>
 
-    <nav class="bg-white border-b border-gray-100 p-4 flex justify-between items-center sticky top-0 z-50 no-print">
-        <div class="flex items-center gap-8">
-            <h1 class="text-xl font-bold tracking-tighter">Pab<span class="text-indigo-600">app</span></h1>
-            <div class="flex items-center bg-gray-50 border rounded-full px-2 py-1 gap-1">
-                <button onclick="changeWeek(-1)" class="p-1.5 hover:text-indigo-500 text-xs">◀</button>
-                <input type="week" id="weekSelector" onchange="loadWeekData()" class="bg-transparent text-xs font-semibold outline-none">
-                <button onclick="changeWeek(1)" class="p-1.5 hover:text-indigo-500 text-xs">▶</button>
+    <nav class="bg-white border-b border-gray-100 p-5 flex justify-between items-center sticky top-0 z-50 no-print">
+        <div class="flex items-center gap-10">
+            <h1 class="text-2xl font-semibold tracking-tighter text-gray-900">Pab<span class="text-indigo-600">app</span></h1>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center bg-gray-50 border border-gray-100 rounded-full px-2 py-1 gap-1">
+                    <button onclick="changeWeek(-1)" class="p-2 hover:text-indigo-500 text-xs">◀</button>
+                    <input type="week" id="weekSelector" onchange="loadWeekData()" class="bg-transparent text-xs font-medium text-gray-600 outline-none">
+                    <button onclick="changeWeek(1)" class="p-2 hover:text-indigo-500 text-xs">▶</button>
+                </div>
+                <span id="navMonthDisplay" class="text-sm font-medium text-indigo-500 bg-indigo-50 px-4 py-1.5 rounded-full uppercase tracking-wider text-[10px]"></span>
             </div>
-            <span id="navMonthDisplay" class="text-xs font-bold text-indigo-500 bg-indigo-50 px-3 py-1 rounded-full uppercase"></span>
         </div>
 
-        <div class="flex items-center gap-2">
-            <button onclick="prepareMonthlyExport()" class="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-indigo-700 transition-all">
+        <div class="flex items-center gap-3">
+            <button onclick="prepareMonthlyExport()" class="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-4 py-2 rounded-full text-xs font-semibold hover:bg-indigo-100 transition-all">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                Exporter le Mois
+                Export Mensuel
             </button>
-            <button onclick="toggleView('billing')" class="text-gray-500 hover:text-indigo-600 text-xs font-bold px-3">Bilan</button>
-            <button onclick="addNewEmployee()" class="bg-gray-900 text-white px-4 py-2 rounded-full text-xs hover:bg-black transition-all">+ Nouveau</button>
+            <button onclick="toggleView('billing')" class="text-gray-500 hover:text-indigo-500 text-sm font-medium px-2">Bilan</button>
+            <button onclick="addNewEmployee()" class="bg-gray-900 text-white px-5 py-2.5 rounded-full text-sm hover:bg-black transition-all">+ Nouveau</button>
         </div>
     </nav>
 
-    <main id="planningView" class="p-6 max-w-[1600px] mx-auto">
+    <main id="planningView" class="p-8 max-w-[1600px] mx-auto">
+        <div class="mb-6 text-xl font-light text-gray-400 italic no-print" id="tableMonthHeader"></div>
         <div id="exportContainer">
-            <!-- Les semaines seront injectées ici -->
+            <!-- Rendu dynamique ici -->
         </div>
     </main>
 
-    <main id="billingView" class="hidden p-8 max-w-3xl mx-auto">
-        <button onclick="toggleView('planning')" class="text-indigo-500 text-sm font-medium mb-4">← Retour</button>
-        <h2 class="text-2xl font-bold mb-6">Bilan Mensuel</h2>
-        <div class="bg-white border rounded-xl overflow-hidden shadow-sm">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 border-b"><tr class="text-[10px] uppercase text-gray-500"><th class="p-4 text-left">Employé</th><th class="p-4 text-center">Heures estimées</th><th class="p-4 text-right">Coût total</th></tr></thead>
+    <main id="billingView" class="hidden p-8 max-w-4xl mx-auto">
+        <button onclick="toggleView('planning')" class="text-indigo-500 text-sm font-medium mb-6 flex items-center gap-2">← Retour</button>
+        <h2 class="text-4xl font-semibold text-gray-900 mb-8 tracking-tighter">Bilan Mensuel</h2>
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-gray-50 border-b"><tr class="text-[10px] uppercase text-gray-500"><th class="p-6 font-medium">Employé</th><th class="p-6 text-center">Heures/Mois</th><th class="p-6 text-center">Coût (12€/h)</th></tr></thead>
                 <tbody id="billingBody"></tbody>
             </table>
         </div>
@@ -181,30 +196,26 @@
             renderWeekTable(window.currentWeekKey, container);
         }
 
-        function renderWeekTable(weekKey, targetElement, isExport = false) {
+        function renderWeekTable(weekKey, targetElement) {
             const data = window.allSchedules[weekKey] || BASE_TEMPLATE;
             const weekDiv = document.createElement('div');
-            weekDiv.className = "week-container bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8";
+            weekDiv.className = "week-container bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-8";
             
-            // Calcul des dates
             const [year, week] = weekKey.split('-W');
             let date = new Date(year, 0, 1 + (week - 1) * 7);
             const monday = new Date(date.setDate(date.getDate() - date.getDay() + 1));
 
             let tableHtml = `
-                <div class="p-3 bg-gray-50 border-b flex justify-between items-center">
-                    <span class="text-xs font-bold text-gray-400">SEMAINE ${week}</span>
-                    <span class="text-xs font-medium text-gray-600">${monday.toLocaleDateString('fr-FR', {day:'numeric', month:'short'})} - ${new Date(monday.getTime() + 6*86400000).toLocaleDateString('fr-FR', {day:'numeric', month:'short'})}</span>
-                </div>
-                <table class="w-full">
+                <div class="week-header-print uppercase">Semaine ${week} - ${monday.toLocaleDateString('fr-FR', {month:'long', year:'numeric'})}</div>
+                <table>
                     <thead>
-                        <tr class="bg-white border-b">
-                            <th class="compact-th w-32 border-r text-left pl-4">TEAM</th>
-                            ${['LUN','MAR','MER','JEU','VEN','SAM','DIM'].map((d, i) => {
+                        <tr class="bg-gray-50/50 border-b border-gray-100">
+                            <th class="p-6 font-medium text-gray-400 uppercase text-[10px] w-40 border-r tracking-widest">Team</th>
+                            ${['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map((d, i) => {
                                 let cur = new Date(monday); cur.setDate(monday.getDate() + i);
-                                return `<th class="compact-th border-r text-center">${d}<br><span class="text-[10px] text-gray-400 font-normal">${cur.getDate()}</span></th>`;
+                                return `<th class="shift-cell p-4 text-center border-r"><span class="block text-[10px] text-gray-400 uppercase mb-1">${d}</span><span class="day-date text-gray-900 text-lg font-semibold">${cur.getDate()}</span></th>`;
                             }).join('')}
-                            <th class="compact-th text-center w-16 text-indigo-600">TOTAL</th>
+                            <th class="p-4 text-center font-bold text-indigo-500 bg-indigo-50/30 w-28 text-[10px] uppercase tracking-widest">Total</th>
                         </tr>
                     </thead>
                     <tbody>`;
@@ -212,17 +223,17 @@
             data.forEach((emp, empIdx) => {
                 const invalid = isScheduleInvalid(emp.schedule);
                 let weeklyTotal = 0;
-                tableHtml += `<tr class="border-b ${invalid && !isExport ? 'row-alert' : ''}">
-                    <td class="compact-td border-r pl-4 font-semibold text-gray-700 truncate" onclick="editName(${empIdx})">${emp.name}</td>`;
+                tableHtml += `<tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors ${invalid ? 'row-alert' : ''}">
+                    <td class="p-5 font-medium text-gray-700 border-r text-xs uppercase tracking-tight"><span class="cursor-pointer" onclick="editName(${empIdx})">${emp.name}</span></td>`;
                 
                 emp.schedule.forEach((code, dayIdx) => {
                     weeklyTotal += getNetHours(code);
-                    tableHtml += `<td class="compact-td border-r p-0 text-center">
-                        <select onchange="updateShift('${weekKey}', ${empIdx}, ${dayIdx}, this.value)" class="w-full h-full font-bold ${code ? 'shift-'+code : 'shift-Empty'}">
+                    tableHtml += `<td class="p-2.5 text-center border-r border-gray-50">
+                        <select onchange="updateShift('${weekKey}', ${empIdx}, ${dayIdx}, this.value)" class="w-full rounded-xl py-2.5 text-center font-bold text-[11px] ${code ? 'shift-'+code : 'shift-Empty'} shadow-sm">
                             ${Object.keys(SHIFT_HOURS).map(opt => `<option value="${opt}" ${opt === code ? 'selected' : ''}>${opt || '-'}</option>`).join('')}
                         </select></td>`;
                 });
-                tableHtml += `<td class="compact-td text-center font-bold text-indigo-500 bg-indigo-50/20">${weeklyTotal}h</td></tr>`;
+                tableHtml += `<td class="p-5 text-center font-bold text-indigo-600 bg-indigo-50/20">${weeklyTotal}h</td></tr>`;
             });
 
             tableHtml += `</tbody></table>`;
@@ -238,25 +249,23 @@
         function prepareMonthlyExport() {
             const [year, weekStr] = window.currentWeekKey.split('-W');
             const container = document.getElementById('exportContainer');
-            container.innerHTML = `<h1 class="text-2xl font-bold mb-8 no-print">Préparation de l'export mensuel...</h1>`;
+            container.innerHTML = "";
             
-            // On cherche le mois du premier jour de la semaine actuelle
             let d = new Date(year, 0, 1 + (Number(weekStr) - 1) * 7);
             const targetMonth = d.getMonth();
             const targetYear = d.getFullYear();
 
-            // Parcourir toutes les semaines de l'année pour trouver celles du même mois
             for(let w=1; w<=53; w++) {
                 let wk = `${targetYear}-W${String(w).padStart(2, '0')}`;
                 let wd = new Date(targetYear, 0, 1 + (w - 1) * 7);
                 if(wd.getMonth() === targetMonth && window.allSchedules[wk]) {
-                    renderWeekTable(wk, container, true);
+                    renderWeekTable(wk, container);
                 }
             }
             
             setTimeout(() => {
                 window.print();
-                renderPlanning(); // Revenir à la vue normale après impression
+                renderPlanning(); 
             }, 500);
         }
 
@@ -282,6 +291,7 @@
             let date = new Date(year, 0, 1 + (week - 1) * 7);
             const monday = new Date(date.setDate(date.getDate() - date.getDay() + 1));
             document.getElementById('navMonthDisplay').innerText = monday.toLocaleDateString('fr-FR', {month: 'long', year: 'numeric'});
+            document.getElementById('tableMonthHeader').innerText = "Planning de " + monday.toLocaleDateString('fr-FR', {month: 'long', year: 'numeric'});
         }
 
         function changeWeek(step) {
@@ -305,7 +315,7 @@
                 window.allSchedules[window.currentWeekKey].forEach(emp => {
                     let h = emp.schedule.reduce((acc, c) => acc + getNetHours(c), 0);
                     let mH = (h * 4.33).toFixed(1);
-                    tbody.innerHTML += `<tr class="border-b"><td class="p-4 font-bold text-gray-700">${emp.name}</td><td class="p-4 text-center font-medium text-gray-500">${mH}h</td><td class="p-4 text-right font-bold text-green-600">${(mH * 12).toFixed(2)}€</td></tr>`;
+                    tbody.innerHTML += `<tr class="border-b"><td class="p-6 font-bold text-gray-700">${emp.name}</td><td class="p-6 text-center font-medium text-gray-500">${mH}h</td><td class="p-6 text-center font-bold text-green-600">${(mH * 12).toFixed(2)}€</td></tr>`;
                 });
             }
         }
